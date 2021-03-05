@@ -6,9 +6,13 @@ import utils.MyDBTools;
 import java.sql.*;
 import java.util.Arrays;
 
+import static utils.MyDBTools.mySQLConnect;
+import static utils.MyDBTools.printData;
+
 public class UserDao {
 
     private String SQLdataBase = "";
+    private String SQLtable = "users";/*
     private static final String CREATE_USER_QUERY =
             "INSERT INTO users(username, email, password) VALUES (?, ?, ?);";
     private static final String READ_USER_QUERY =
@@ -16,26 +20,75 @@ public class UserDao {
     private static final String UPDATE_USER_QUERY =
             "UPDATE users SET email = ?, username = ?, password = ? WHERE id = ? ;";
     private static final String GET_SIZE_QUERY = "SELECT COUNT(*) FROM users;";
-    private static final String DELETE_USER_QUERY = "DELETE FROM users WHERE id = ? ;";
+    private static final String DELETE_USER_QUERY = "DELETE FROM users WHERE id = ? ;";*/
     private static final String SHOW_ALL_QUERY = "SELECT * FROM users";
+    /*
+    private static final String CREATE_TABLE_PREFFIX = "CREATE TABLE ";
+    private static final String CREATE_TABLE_SUFFIX = " ( " +
+            "id INT AUTO_INCREMENT,"+
+            "login VARCHAR(16) UNIQUE,"+
+            "name VARCHAR(255),"+
+            "email VARCHAR(32) UNIQUE,"+
+            "passwd VARCHAR(255),"+
+            "PRIMARY KEY(id) );";*/
+    private static final String CREATE_TABLE =
+            "CREATE TABLE _SQL-TABLE-NAME_  ( " +
+            "id INT AUTO_INCREMENT,"+
+            "login VARCHAR(16) UNIQUE,"+
+            "name VARCHAR(255),"+
+            "email VARCHAR(32) UNIQUE,"+
+            "passwd VARCHAR(255),"+
+            "PRIMARY KEY(id) );";
 
-    public UserDao(String SQLdataBase){
+    public UserDao(String SQLdataBase, String SQLtable){
         this.SQLdataBase = SQLdataBase;
+        this.SQLtable = SQLtable;
     }
 
     public void printAllDBase(){
-       try(Connection c  = MyDBTools.mySQLConnect(SQLdataBase)){
-            MyDBTools.printData(c, SHOW_ALL_QUERY,
-                    "id","email","username", "password");
+       try(Connection c  = mySQLConnect(SQLdataBase)){
+            printData(c, SHOW_ALL_QUERY,
+                    "id","login", "email","name", "passwd");
        }catch (SQLException e) {
            e.printStackTrace();
        }
     }
+
+    public Boolean createTable(){
+        Boolean tabExists = false;
+       try(Connection c  = mySQLConnect(SQLdataBase)){
+           // Pobierz meda dane z servera SQL
+           DatabaseMetaData meta = c.getMetaData();
+           // Przeszukaj meta dane w poszukiwaniu nazwy tabeli
+           ResultSet res = meta.getTables(
+                   null, null, SQLtable,  new String[] {"TABLE"});
+           // res zawiera liste baz danych w której znaleziono tabele o podanej nazwie,
+           // sprawdzic czy aktualna baza jest na liscie
+           while (res.next()){
+               if(res.getString("TABLE_CAT").equals(SQLdataBase)){
+                   tabExists = true;
+               }
+           }
+           // jezeli nie znalazl na liscie: stworzyc tabele
+           if(!tabExists) {
+               PreparedStatement stmt = c.prepareStatement(
+                       CREATE_TABLE.replaceAll("_SQL-TABLE-NAME_", SQLtable));
+               stmt.executeUpdate();
+               return true;
+           }else{
+               return false;
+           }
+       }catch (SQLException e) {
+           e.printStackTrace();
+           return null;
+       }
+    }
+
 /*
     public int delete(int userID) {
         User ifExists = this.read(userID);
         if(userID > 0 && ifExists != null) {
-            try(Connection c = MyDBTools.mySQLConnect(SQLdataBase);
+            try(Connection c = mySQLConnect(SQLdataBase);
                 PreparedStatement stmt = c.prepareStatement(DELETE_USER_QUERY);
             ) {
                 stmt.setInt(1, userID ) ;
@@ -46,7 +99,7 @@ public class UserDao {
         }
         return 0;
     }
-
+/*
     public User[] readAll(){
         int trialId=1;
         User[] allUsers = new User[0];
@@ -64,7 +117,7 @@ public class UserDao {
 
     public User read(int userID){
         if(userID > 0) {
-            try(Connection c = MyDBTools.mySQLConnect(SQLdataBase);
+            try(Connection c = mySQLConnect(SQLdataBase);
                 PreparedStatement stmt = c.prepareStatement(READ_USER_QUERY);
             ) {
                 stmt.setInt(1, userID ) ;
@@ -85,7 +138,7 @@ public class UserDao {
 
     public int update(User user){
         if(user != null && user.getId() > 0){
-            try(Connection c = MyDBTools.mySQLConnect(SQLdataBase);
+            try(Connection c = mySQLConnect(SQLdataBase);
                 PreparedStatement stmt =
                         c.prepareStatement(UPDATE_USER_QUERY, PreparedStatement.RETURN_GENERATED_KEYS);
             ) {
@@ -106,7 +159,7 @@ public class UserDao {
 
     public long create(User userToAdd){
         if(userToAdd != null) {
-            try(Connection c = MyDBTools.mySQLConnect(SQLdataBase);
+            try(Connection c = mySQLConnect(SQLdataBase);
                 PreparedStatement stmt =
                         c.prepareStatement(CREATE_USER_QUERY, PreparedStatement.RETURN_GENERATED_KEYS);
             ) {
@@ -130,7 +183,7 @@ public class UserDao {
     }
 
     private int getDBaseSize(){
-        try(Connection c = MyDBTools.mySQLConnect(SQLdataBase);
+        try(Connection c = mySQLConnect(SQLdataBase);
                 PreparedStatement stmt = c.prepareStatement(GET_SIZE_QUERY);
             ) {
                 ResultSet rs = stmt.executeQuery();
