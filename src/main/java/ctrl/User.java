@@ -2,13 +2,21 @@ package ctrl;
 
 public class User {
     private int ID;
-    private String login, userName, userEmail;
+    private String login, name, email, passwd;
 
-    public User(String login, String userName, String userEmail){
+    public User(){
+        ID      =0;
+        login   ="-undefined-";
+        name    ="-undefined-";
+        email   ="-undefined-";
+        passwd  ="";
+    }
+    public User(String login, String name, String email, String passwd){
         ID = -1;
         this.login = login;
-        this.userName = userName;
-        this.userEmail = userEmail;
+        this.name = name;
+        this.email = email;
+        this.passwd = passwd;
     }
 
     public int getID() {
@@ -19,12 +27,16 @@ public class User {
         return login;
     }
 
-    public String getUserEmail() {
-        return userEmail;
+    public String getEmail() {
+        return email;
     }
 
-    public String getUserName() {
-        return userName;
+    public String getName() {
+        return name;
+    }
+
+    public String getPasswd() {
+        return passwd;
     }
 
     public void setID(int ID) {
@@ -35,12 +47,16 @@ public class User {
         this.login = login;
     }
 
-    public void setUserEmail(String userEmail) {
-        this.userEmail = userEmail;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setPasswd(String passwd) {
+        this.passwd = passwd;
     }
 
     @Override
@@ -49,7 +65,7 @@ public class User {
         return fmt;
     }
     public String toStringForTesting() {
-        final String fmt = " [user]: %3d %10s %s28s %s";
-        return String.format(fmt, ID, login, userName, userEmail);
+        final String fmt = " [user]: %3d %-10s %-28s %s";
+        return String.format(fmt, ID, login, name, email);
     }
 }

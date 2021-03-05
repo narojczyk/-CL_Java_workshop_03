@@ -1,43 +1,37 @@
 package model;
 
 import ctrl.User;
-import utils.MyDBTools;
 
 import java.sql.*;
 import java.util.Arrays;
 
+import static org.mindrot.jbcrypt.BCrypt.gensalt;
+import static org.mindrot.jbcrypt.BCrypt.hashpw;
 import static utils.MyDBTools.mySQLConnect;
 import static utils.MyDBTools.printData;
 
 public class UserDao {
 
-    private String SQLdataBase = "";
-    private String SQLtable = "users";/*
+    private String SQLdataBase;
+    private String SQLtable;
     private static final String CREATE_USER_QUERY =
-            "INSERT INTO users(username, email, password) VALUES (?, ?, ?);";
+            "INSERT INTO _SQL-TABLE-NAME_(login, name, email, passwd) VALUES (?, ?, ?, ?);";
     private static final String READ_USER_QUERY =
-            "SELECT id,email,username FROM users WHERE id = ?;";
+            "SELECT id, login, email, name, passwd FROM _SQL-TABLE-NAME_ WHERE id = ?;";
+    private static final String GET_SIZE_QUERY = "SELECT COUNT(*) FROM _SQL-TABLE-NAME_;";
+    /*
     private static final String UPDATE_USER_QUERY =
             "UPDATE users SET email = ?, username = ?, password = ? WHERE id = ? ;";
-    private static final String GET_SIZE_QUERY = "SELECT COUNT(*) FROM users;";
+
     private static final String DELETE_USER_QUERY = "DELETE FROM users WHERE id = ? ;";*/
-    private static final String SHOW_ALL_QUERY = "SELECT * FROM users";
-    /*
-    private static final String CREATE_TABLE_PREFFIX = "CREATE TABLE ";
-    private static final String CREATE_TABLE_SUFFIX = " ( " +
-            "id INT AUTO_INCREMENT,"+
-            "login VARCHAR(16) UNIQUE,"+
-            "name VARCHAR(255),"+
-            "email VARCHAR(32) UNIQUE,"+
-            "passwd VARCHAR(255),"+
-            "PRIMARY KEY(id) );";*/
+//    private static final String SHOW_ALL_QUERY = "SELECT * FROM users";
     private static final String CREATE_TABLE =
             "CREATE TABLE _SQL-TABLE-NAME_  ( " +
             "id INT AUTO_INCREMENT,"+
-            "login VARCHAR(16) UNIQUE,"+
+            "login VARCHAR(16) NOT NULL UNIQUE,"+
             "name VARCHAR(255),"+
-            "email VARCHAR(32) UNIQUE,"+
-            "passwd VARCHAR(255),"+
+            "email VARCHAR(32) NOT NULL UNIQUE,"+
+            "passwd VARCHAR(65) NOT NULL,"+
             "PRIMARY KEY(id) );";
 
     public UserDao(String SQLdataBase, String SQLtable){
@@ -45,13 +39,78 @@ public class UserDao {
         this.SQLtable = SQLtable;
     }
 
-    public void printAllDBase(){
+    public User read(int userID){
+        if(userID > 0) {
+            try(Connection c = mySQLConnect(SQLdataBase);
+                PreparedStatement stmt = c.prepareStatement(
+                        READ_USER_QUERY.replaceAll("_SQL-TABLE-NAME_", SQLtable)) ) {
+                stmt.setInt(1, userID ) ;
+                ResultSet rs = stmt.executeQuery();
+                if (rs.next()) {
+                    User userFromSQL = new User();
+                    userFromSQL.setID(rs.getInt("id"));
+                    userFromSQL.setLogin(rs.getString("login"));
+                    userFromSQL.setEmail(rs.getString("email"));
+                    userFromSQL.setName(rs.getString("name"));
+                    userFromSQL.setPasswd(rs.getString("passwd"));
+                    return userFromSQL;
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
+    public long create(User userToAdd){
+        if(userToAdd != null) {
+            try(Connection c = mySQLConnect(SQLdataBase);
+                PreparedStatement stmt =
+                        c.prepareStatement(CREATE_USER_QUERY.replaceAll("_SQL-TABLE-NAME_", SQLtable),
+                                PreparedStatement.RETURN_GENERATED_KEYS) ) {
+                stmt.setString(1, userToAdd.getLogin());
+                stmt.setString(2, userToAdd.getName());
+                stmt.setString(3, userToAdd.getEmail());
+                stmt.setString(4, hashPassword(userToAdd.getPasswd()));
+                stmt.executeUpdate();
+                ResultSet rs = stmt.getGeneratedKeys();
+                if (rs.next()) {
+                    return rs.getLong(1);
+                }
+            }catch (SQLIntegrityConstraintViolationException e){
+                return -99;
+            }catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return 0;
+    }
+
+    private String hashPassword(String password) {
+        return hashpw(password, gensalt());
+    }
+
+    /*public void printAllDBase(){
        try(Connection c  = mySQLConnect(SQLdataBase)){
             printData(c, SHOW_ALL_QUERY,
                     "id","login", "email","name", "passwd");
        }catch (SQLException e) {
            e.printStackTrace();
        }
+    }*/
+
+    public int getRecordsCount(){
+        try(Connection c = mySQLConnect(SQLdataBase);
+            PreparedStatement stmt = c.prepareStatement(
+                    GET_SIZE_QUERY.replaceAll("_SQL-TABLE-NAME_", SQLtable)) ) {
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 
     public Boolean createTable(){
@@ -115,26 +174,7 @@ public class UserDao {
         return allUsers;
     }
 
-    public User read(int userID){
-        if(userID > 0) {
-            try(Connection c = mySQLConnect(SQLdataBase);
-                PreparedStatement stmt = c.prepareStatement(READ_USER_QUERY);
-            ) {
-                stmt.setInt(1, userID ) ;
-                ResultSet rs = stmt.executeQuery();
-                if (rs.next()) {
-                    User userRead = new User();
-                   userRead.setId(rs.getInt("id"));
-                   userRead.setUsrEmail(rs.getString("email"));
-                   userRead.setUsrName(rs.getString("username"));
-                    return userRead;
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-        return null;
-    }
+
 
     public int update(User user){
         if(user != null && user.getId() > 0){
@@ -157,44 +197,9 @@ public class UserDao {
         return 0;
     }
 
-    public long create(User userToAdd){
-        if(userToAdd != null) {
-            try(Connection c = mySQLConnect(SQLdataBase);
-                PreparedStatement stmt =
-                        c.prepareStatement(CREATE_USER_QUERY, PreparedStatement.RETURN_GENERATED_KEYS);
-            ) {
-                stmt.setString(1, userToAdd.getUsrName());
-                stmt.setString(2, userToAdd.getUsrEmail());
-                stmt.setString(3, hashPassword(userToAdd.getUsrPasswd()));
-                stmt.executeUpdate();
-                ResultSet rs = stmt.getGeneratedKeys();
-                if (rs.next()) {
-                    return rs.getLong(1);
-                }
-            } catch (SQLException e) {
-                    e.printStackTrace();
-            }
-        }
-        return 0;
-    }
 
-    private String hashPassword(String password) {
-        return BC.BCrypt.hashpw(password, BC.BCrypt.gensalt());
-    }
 
-    private int getDBaseSize(){
-        try(Connection c = mySQLConnect(SQLdataBase);
-                PreparedStatement stmt = c.prepareStatement(GET_SIZE_QUERY);
-            ) {
-                ResultSet rs = stmt.executeQuery();
-                if (rs.next()) {
-                    return rs.getInt(1);
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        return 0;
-    }
+
     
     private User[] extendUsersArray(User[] users, User newUser) {
         User[] extendedUsers = Arrays.copyOf(users, users.length + 1); 
