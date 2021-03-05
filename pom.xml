@@ -26,19 +26,28 @@
             <artifactId>mysql-connector-java</artifactId>
             <version>8.0.23</version>
         </dependency>
-        <!--        <dependency>-->
-        <!--            <groupId>javax.servlet</groupId>-->
-        <!--            <artifactId>jstl</artifactId>-->
-        <!--            <version>1.2</version>-->
-        <!--        </dependency>-->
 
+        <!-- This is required for servlets to work (servlet API) -->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>3.1.0</version>
+            <scope>provided</scope>
+        </dependency>
 
-        <!--        <dependency>-->
-        <!--            <groupId>javax.servlet</groupId>-->
-        <!--            <artifactId>javax.servlet-api</artifactId>-->
-        <!--            <version>3.1.0</version>-->
-        <!--            <scope>provided</scope>-->
-        <!--        </dependency>-->
+        <!-- JSP - Standard Tag Library (JSTL) -->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>jstl</artifactId>
+            <version>1.2</version>
+        </dependency>
+
+        <!-- BCrypt library (not to download the local copies of the files -->
+        <dependency>
+            <groupId>org.mindrot</groupId>
+            <artifactId>jbcrypt</artifactId>
+            <version>0.4</version>
+        </dependency>
 
 
         <!--        <dependency>-->

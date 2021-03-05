@@ -22,7 +22,7 @@ public class UserDao {
     public UserDao(String SQLdataBase){
         this.SQLdataBase = SQLdataBase;
     }
-/*
+
     public void printAllDBase(){
        try(Connection c  = MyDBTools.mySQLConnect(SQLdataBase)){
             MyDBTools.printData(c, SHOW_ALL_QUERY,
@@ -31,7 +31,7 @@ public class UserDao {
            e.printStackTrace();
        }
     }
-
+/*
     public int delete(int userID) {
         User ifExists = this.read(userID);
         if(userID > 0 && ifExists != null) {
