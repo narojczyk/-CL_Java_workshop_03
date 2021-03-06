@@ -4,6 +4,7 @@ import model.UserDao;
 
 import javax.sound.midi.Soundbank;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import static utils.MyDBTools.checkIfExists;
@@ -50,6 +51,8 @@ public class Workshop03 {
         initiallyPopulateDB(uDAO, DefaultUsers);
 
         // test reading from SQL
+        Map<Integer,User> UsersMap = uDAO.getUsersMap();
+
         User temp;
         int recordsPrinted=0, i=1;
         System.out.println("Read all " + uDAO.getRecordsCount() + " records from DB");
@@ -61,13 +64,15 @@ public class Workshop03 {
             }
         }
 
-        String testemail="qE12er34$#_-09";
-        System.out.println(testemail +" "+
-            uDAO.testPasswdStrength(testemail)
-        );
+//        uDAO.getRecordIDs();
 
-        uDAO.update(121, "login", "login222");
-        uDAO.update(121, "email", "jdoe3@gdzies.tam.pl");
+//        String testemail="qE12er34$#_-09";
+//        System.out.println(testemail +" "+
+//            uDAO.testPasswdStrength(testemail)
+//        );
+
+//        uDAO.update(121, "login", "login222");
+//        uDAO.update(121, "email", "jdoe3@gdzies.tam.pl");
     }
 
     public static void initiallyPopulateDB(UserDao udao, Set<User> users ){

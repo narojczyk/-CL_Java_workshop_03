@@ -2,6 +2,9 @@ package model;
 
 import ctrl.User;
 import java.sql.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
 import static org.mindrot.jbcrypt.BCrypt.gensalt;
 import static org.mindrot.jbcrypt.BCrypt.hashpw;
@@ -24,11 +27,12 @@ public class UserDao {
     private static final String GET_VAR_COUNT =
             "SELECT COUNT(_SQL-COLUMN-NAME_) FROM _SQL-TABLE-NAME_ "+
             "WHERE _SQL-COLUMN-NAME_ LIKE \"_SQL-SEARCH-FOR_\";";
-
     private static final String UPDATE_USER_QUERY =
             "UPDATE _SQL-TABLE-NAME_ SET _SQL-COLUMN-NAME_ = ? WHERE id = ? ;";
     private static final String DELETE_USER_QUERY =
             "DELETE FROM _SQL-TABLE-NAME_ WHERE id = ? ;";
+    private static final String ID_USER_QUERY =
+            "SELECT id FROM _SQL-TABLE-NAME_ ORDER BY id ASC ;";
     private static final String CREATE_TABLE =
             "CREATE TABLE _SQL-TABLE-NAME_  ( " +
             "id INT AUTO_INCREMENT,"+
@@ -41,6 +45,34 @@ public class UserDao {
     public UserDao(String SQLdataBase, String SQLtable){
         this.SQLdataBase = SQLdataBase;
         this.SQLtable = SQLtable;
+    }
+
+    public Map<Integer,User> getUsersMap(){
+        Map<Integer,User> UsersMap = new HashMap<>();
+        long[] IDs = getRecordIDs();
+        for(int i=0; i<IDs.length; i++){
+            UsersMap.put((int) IDs[i], read(IDs[i]));
+        }
+        return UsersMap;
+    }
+
+    private long[] getRecordIDs() {
+        long[] recordIDs = new long[0];
+        int currentLength = recordIDs.length;
+
+        try(Connection c = mySQLConnect(SQLdataBase);
+            PreparedStatement stmt = c.prepareStatement(
+                    ID_USER_QUERY.replaceAll("_SQL-TABLE-NAME_", SQLtable)) ) {
+            ResultSet rs = stmt.executeQuery();
+            while(rs.next()) {
+                recordIDs = Arrays.copyOf(recordIDs, currentLength + 1);
+                recordIDs[currentLength++] = rs.getLong("id");
+            }
+            return recordIDs;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return recordIDs;
     }
 
     public int delete(int userID) {
@@ -82,12 +114,12 @@ public class UserDao {
         return 0;
     }
 
-    public User read(int userID){
+    public User read(long userID){
         if(userID > 0) {
             try(Connection c = mySQLConnect(SQLdataBase);
                 PreparedStatement stmt = c.prepareStatement(
                         READ_USER_QUERY.replaceAll("_SQL-TABLE-NAME_", SQLtable)) ) {
-                stmt.setInt(1, userID ) ;
+                stmt.setLong(1, userID ) ;
                 ResultSet rs = stmt.executeQuery();
                 if (rs.next()) {
                     User userFromSQL = new User();

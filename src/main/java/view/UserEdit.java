@@ -20,15 +20,6 @@ public class UserEdit extends HttpServlet {
 
         String editUserID = r.getParameter("modifyID");
         Integer editID = Integer.parseInt(editUserID);
-//                ? r.getParameter("modifyID")
-//                : r.getParameter("uid");
-//        if(editUserID == null ){
-//            editID = 0;
-//            getServletContext().getRequestDispatcher("/WEB-INF/error.jsp")
-//                .forward(r, R);
-//        }else {
-//            editID = Integer.parseInt(editUserID);
-//        }
 
         // Parameters from gatherUserData form
         String FRM_login = r.getParameter("login");
@@ -59,12 +50,6 @@ public class UserEdit extends HttpServlet {
         }
 
         R.sendRedirect("/user/list");
-//        if(editUserID!=null) {
-//            R.getWriter().printf("post odebrano: costam\n %s\n %s", editUserID, "T");
-//        }else {
-//            R.getWriter().printf("post odebrano: costam\n %s\n %s", editUserID, "F");
-//        }
-
     }
 
     protected void doGet(
