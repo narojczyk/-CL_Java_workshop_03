@@ -2,8 +2,10 @@ package model;
 
 import ctrl.User;
 
+import javax.swing.text.StyledEditorKit;
 import java.sql.*;
 import java.util.Arrays;
+import java.util.regex.Pattern;
 
 import static org.mindrot.jbcrypt.BCrypt.gensalt;
 import static org.mindrot.jbcrypt.BCrypt.hashpw;
@@ -14,29 +16,61 @@ public class UserDao {
 
     private String SQLdataBase;
     private String SQLtable;
+    private static final int size_login  = 16;
+    private static final int size_name   = 255;
+    private static final int size_email  = 32;
+    private static final int size_passwd = 65;
+    private static final int size_passwd_min_chars = 8;
     private static final String CREATE_USER_QUERY =
             "INSERT INTO _SQL-TABLE-NAME_(login, name, email, passwd) VALUES (?, ?, ?, ?);";
     private static final String READ_USER_QUERY =
             "SELECT id, login, email, name, passwd FROM _SQL-TABLE-NAME_ WHERE id = ?;";
     private static final String GET_SIZE_QUERY = "SELECT COUNT(*) FROM _SQL-TABLE-NAME_;";
-    /*
-    private static final String UPDATE_USER_QUERY =
-            "UPDATE users SET email = ?, username = ?, password = ? WHERE id = ? ;";
+    private static final String GET_VAR_COUNT =
+            "SELECT COUNT(_SQL-COLUMN-NAME_) FROM _SQL-TABLE-NAME_ "+
+            "WHERE _SQL-COLUMN-NAME_ LIKE \"_SQL-SEARCH-FOR_\";";
 
+    private static final String UPDATE_USER_QUERY =
+            "UPDATE _SQL-TABLE-NAME_ SET _SQL-COLUMN-NAME_ = ? WHERE id = ? ;";
+/*
     private static final String DELETE_USER_QUERY = "DELETE FROM users WHERE id = ? ;";*/
 //    private static final String SHOW_ALL_QUERY = "SELECT * FROM users";
     private static final String CREATE_TABLE =
             "CREATE TABLE _SQL-TABLE-NAME_  ( " +
             "id INT AUTO_INCREMENT,"+
-            "login VARCHAR(16) NOT NULL UNIQUE,"+
-            "name VARCHAR(255),"+
-            "email VARCHAR(32) NOT NULL UNIQUE,"+
-            "passwd VARCHAR(65) NOT NULL,"+
+            "login VARCHAR("+ size_login +") NOT NULL UNIQUE,"+
+            "name VARCHAR("+ size_name +"),"+
+            "email VARCHAR("+ size_email +") NOT NULL UNIQUE,"+
+            "passwd VARCHAR("+ size_passwd +") NOT NULL,"+
             "PRIMARY KEY(id) );";
 
     public UserDao(String SQLdataBase, String SQLtable){
         this.SQLdataBase = SQLdataBase;
         this.SQLtable = SQLtable;
+    }
+
+    public int update(long ID, String collumn, String newValue){
+        if(ID > 0){
+            try(Connection c = mySQLConnect(SQLdataBase);
+                PreparedStatement stmt =
+                        c.prepareStatement(
+                                UPDATE_USER_QUERY.
+                                        replaceAll("_SQL-TABLE-NAME_", SQLtable).
+                                        replaceAll("_SQL-COLUMN-NAME_", collumn),
+                                PreparedStatement.RETURN_GENERATED_KEYS);
+            ) {
+                stmt.setString(1, newValue);
+                stmt.setLong(2,ID);
+                return stmt.executeUpdate();
+            } catch (SQLIntegrityConstraintViolationException ecv){
+                System.out.printf("[UserDAO update] Failed - %s='%s' exists\n",
+                        collumn, newValue);
+                return 0;
+            }catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return 0;
     }
 
     public User read(int userID){
@@ -83,7 +117,7 @@ public class UserDao {
                 e.printStackTrace();
             }
         }
-        return 0;
+        return -666;
     }
 
     private String hashPassword(String password) {
@@ -176,26 +210,7 @@ public class UserDao {
 
 
 
-    public int update(User user){
-        if(user != null && user.getId() > 0){
-            try(Connection c = mySQLConnect(SQLdataBase);
-                PreparedStatement stmt =
-                        c.prepareStatement(UPDATE_USER_QUERY, PreparedStatement.RETURN_GENERATED_KEYS);
-            ) {
-                stmt.setString(1, user.getUsrName());
-                stmt.setString(2, user.getUsrEmail());
-                stmt.setString(3, hashPassword(user.getUsrPasswd()));
-                stmt.setInt(4, user.getId());
-                return stmt.executeUpdate();
-            } catch (SQLIntegrityConstraintViolationException ecv){
-                System.out.printf("Nieudana operacja - email '%s' juz istnieje\n",user.getUsrEmail());
-                return 0;
-            }catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-        return 0;
-    }
+
 
 
 
@@ -209,4 +224,61 @@ public class UserDao {
 
 
      */
+
+    private int countMatching(String collumn, String searchValue){
+        try(Connection c = mySQLConnect(SQLdataBase);
+            PreparedStatement stmt = c.prepareStatement(
+                    GET_VAR_COUNT.
+                            replaceAll("_SQL-TABLE-NAME_", SQLtable).
+                            replaceAll("_SQL-COLUMN-NAME_", collumn).
+                            replaceAll("_SQL-SEARCH-FOR_", searchValue) )) {
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public boolean validateNewLogin(String candidateLogin){
+        if (candidateLogin!=null) {
+            boolean loginLength = candidateLogin.length() < size_login;
+            boolean loginUsed = countMatching("login", candidateLogin) == 0;
+            Pattern regex1 = Pattern.compile("^[^0-9][a-zA-Z0-9_]{4," + size_login + "}");
+            boolean allowedChars = regex1.matcher(candidateLogin).matches();
+            return true && loginLength && loginUsed && allowedChars;
+        }
+        return false;
+    }
+
+    public boolean validateNewEmail(String candidateEmail){
+        final String EMAIL_REGEX = "[_a-zA-Z0-9-]+(\\.[_a-zA-Z0-9-]+)*@[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)*\\.([a-zA-Z]{2,}){1}";
+        if(candidateEmail!=null) {
+            boolean emailLength = candidateEmail.length() < size_email;
+            boolean emailUsed = countMatching("email", candidateEmail) == 0;
+            Pattern regex1 = Pattern.compile(EMAIL_REGEX);
+            boolean validEmailForm = regex1.matcher(candidateEmail).matches();
+            return true && emailLength && emailUsed && validEmailForm;
+        }
+        return false;
+    }
+
+    public boolean testPasswdStrength(String candidatePasswd){
+        Pattern regex1 = Pattern.compile("[\\s\\W]+");
+        Pattern regex2 = Pattern.compile("[a-z]+");
+        Pattern regex3 = Pattern.compile("[A-Z]+");
+        Pattern regex4 = Pattern.compile("[\\d]+");
+        if(candidatePasswd!=null) {
+            boolean passwdLength = candidatePasswd.length() > size_passwd_min_chars;
+            boolean strongPasswd1 = regex1.matcher(candidatePasswd).find();
+            boolean strongPasswd2 = regex2.matcher(candidatePasswd).find();
+            boolean strongPasswd3 = regex3.matcher(candidatePasswd).find();
+            boolean strongPasswd4 = regex4.matcher(candidatePasswd).find();
+            return true && passwdLength &&
+                    strongPasswd1 && strongPasswd2 && strongPasswd3 && strongPasswd4;
+        }
+        return false;
+    }
 }

@@ -51,12 +51,23 @@ public class Workshop03 {
 
         // test reading from SQL
         User temp;
+        int recordsPrinted=0, i=1;
         System.out.println("Read all " + uDAO.getRecordsCount() + " records from DB");
-        for (int i=1; i<=uDAO.getRecordsCount(); i++){
-            temp = uDAO.read(i);
-            System.out.println(temp.toStringForTesting() );
+        while(recordsPrinted < uDAO.getRecordsCount()){
+            temp = uDAO.read(i++);
+            if(temp != null) {
+                System.out.println(temp.toStringForTesting());
+                recordsPrinted++;
+            }
         }
 
+        String testemail="qE12er34$#_-09";
+        System.out.println(testemail +" "+
+            uDAO.testPasswdStrength(testemail)
+        );
+
+        uDAO.update(121, "login", "login222");
+        uDAO.update(121, "email", "jdoe3@gdzies.tam.pl");
     }
 
     public static void initiallyPopulateDB(UserDao udao, Set<User> users ){

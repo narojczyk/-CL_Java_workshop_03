@@ -7,7 +7,7 @@
           password="bnmmnb"
           driverClassName="com.mysql.jdbc.Driver"
           connectionProperties="useUnicode=yes;characterEncoding=utf8;"
-          url="jdbc:mysql://localhost:3306/workshop2"
+          url="jdbc:mysql://localhost:3306/workshop"
           maxTotal="100"
           maxIdle="30"
           maxWaitMillis="10000" />
