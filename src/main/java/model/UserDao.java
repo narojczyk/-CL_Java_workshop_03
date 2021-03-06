@@ -1,16 +1,11 @@
 package model;
 
 import ctrl.User;
-
-import javax.swing.text.StyledEditorKit;
 import java.sql.*;
-import java.util.Arrays;
 import java.util.regex.Pattern;
-
 import static org.mindrot.jbcrypt.BCrypt.gensalt;
 import static org.mindrot.jbcrypt.BCrypt.hashpw;
 import static utils.MyDBTools.mySQLConnect;
-import static utils.MyDBTools.printData;
 
 public class UserDao {
 
@@ -32,9 +27,8 @@ public class UserDao {
 
     private static final String UPDATE_USER_QUERY =
             "UPDATE _SQL-TABLE-NAME_ SET _SQL-COLUMN-NAME_ = ? WHERE id = ? ;";
-/*
-    private static final String DELETE_USER_QUERY = "DELETE FROM users WHERE id = ? ;";*/
-//    private static final String SHOW_ALL_QUERY = "SELECT * FROM users";
+    private static final String DELETE_USER_QUERY =
+            "DELETE FROM _SQL-TABLE-NAME_ WHERE id = ? ;";
     private static final String CREATE_TABLE =
             "CREATE TABLE _SQL-TABLE-NAME_  ( " +
             "id INT AUTO_INCREMENT,"+
@@ -47,6 +41,21 @@ public class UserDao {
     public UserDao(String SQLdataBase, String SQLtable){
         this.SQLdataBase = SQLdataBase;
         this.SQLtable = SQLtable;
+    }
+
+    public int delete(int userID) {
+        User ifExists = this.read(userID);
+        if(userID > 0 && ifExists != null) {
+            try(Connection c = mySQLConnect(SQLdataBase);
+                PreparedStatement stmt = c.prepareStatement(
+                        DELETE_USER_QUERY.replaceAll("_SQL-TABLE-NAME_", SQLtable)) ) {
+                stmt.setInt(1, userID ) ;
+                return stmt.executeUpdate();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return 0;
     }
 
     public int update(long ID, String collumn, String newValue){
@@ -124,15 +133,6 @@ public class UserDao {
         return hashpw(password, gensalt());
     }
 
-    /*public void printAllDBase(){
-       try(Connection c  = mySQLConnect(SQLdataBase)){
-            printData(c, SHOW_ALL_QUERY,
-                    "id","login", "email","name", "passwd");
-       }catch (SQLException e) {
-           e.printStackTrace();
-       }
-    }*/
-
     public int getRecordsCount(){
         try(Connection c = mySQLConnect(SQLdataBase);
             PreparedStatement stmt = c.prepareStatement(
@@ -178,20 +178,7 @@ public class UserDao {
     }
 
 /*
-    public int delete(int userID) {
-        User ifExists = this.read(userID);
-        if(userID > 0 && ifExists != null) {
-            try(Connection c = mySQLConnect(SQLdataBase);
-                PreparedStatement stmt = c.prepareStatement(DELETE_USER_QUERY);
-            ) {
-                stmt.setInt(1, userID ) ;
-                return stmt.executeUpdate();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-        return 0;
-    }
+
 /*
     public User[] readAll(){
         int trialId=1;
@@ -208,14 +195,6 @@ public class UserDao {
         return allUsers;
     }
 
-
-
-
-
-
-
-
-    
     private User[] extendUsersArray(User[] users, User newUser) {
         User[] extendedUsers = Arrays.copyOf(users, users.length + 1); 
         extendedUsers[users.length] = newUser; 

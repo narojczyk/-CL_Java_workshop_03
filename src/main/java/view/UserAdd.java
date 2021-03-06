@@ -79,9 +79,16 @@ public class UserAdd extends HttpServlet {
 //        String LST_login = r.getParameter("LST_login");
 //        String LST_email = r.getParameter("LST_email");
 //        String LST_name  = r.getParameter("LST_name");
-//        r.setAttribute("LST_login", "LST_login");
-//        r.setAttribute("LST_email", LST_email);
-//        r.setAttribute("LST_name", LST_name);
+        r.setAttribute("PLH_login", "login");
+        r.setAttribute("PLH_email", "email");
+        r.setAttribute("PLH_name", "full name");
+        r.setAttribute("PLH_passwdA", "password");
+        r.setAttribute("PLH_passwdB", "re-type password");
+        r.setAttribute("editID", "0");
+        r.setAttribute("formInfo",
+                "<p>Add user Form</p><p>required fields are marked with(*)</p>");
+        r.setAttribute("action", "/user/add");
+        r.setAttribute("star", "*");
         getServletContext().getRequestDispatcher("/WEB-INF/gatherUserData.jsp")
                 .forward(r, R);
     }

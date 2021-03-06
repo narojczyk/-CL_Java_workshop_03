@@ -24,9 +24,10 @@
       </tbody>
     </table>
 </div>
-    <form action="/user/edit" method="post">
-        <input type="hidden" name="modifyID" value="${UserData.getID()}">
-        <input type="submit" value="Modyfikuj użytkownika">
+
+    <form action="${action}" method="${method}">
+        <input type="hidden" name="uid" value="${UserData.getID()}">
+        <input type="submit" value="${actionDesc}">
     </form>
 
 <%@ include file="footer.jsp" %>

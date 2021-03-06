@@ -44,6 +44,10 @@ public class ShowUserInfo extends HttpServlet {
             r.setAttribute("UserData", userFromSQL);
         }
 
+        r.setAttribute("action", "/user/edit");
+        r.setAttribute("method", "get");
+        r.setAttribute("actionDesc", "Modyfikuj użytkownika");
+
         getServletContext().getRequestDispatcher("/WEB-INF/usershow.jsp")
                 .forward(r, R);
 

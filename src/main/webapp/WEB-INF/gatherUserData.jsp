@@ -10,14 +10,15 @@
 <%@ include file="header.jsp" %>
 
 <div>
-    <form action="/user/add" method="post">
-        <p>new user form</p>
-        <p>required fields are marked with(*)</p>
-        <label> * <input type="text" name="login" value="${LST_login}" placeholder="login"> </label><br>
-        <label> * <input type="text" name="email" value="${LST_email}" placeholder="email"> </label><br>
-        <label>   <input type="text" name="name" value="${LST_name}"  placeholder="full name"> </label><br>
-        <label> * <input type="password" name="fPasswdA" placeholder="password" /></label><br>
-        <label> * <input type="password" name="fPasswdB" placeholder="retype password"/></label><br>
+    <form action="${action}" method="post">
+        ${formInfo}
+        <label> ${star} <input type="text" name="login" placeholder="${PLH_login}"> </label><br>
+        <label> ${star} <input type="text" name="email" placeholder="${PLH_email}"> </label><br>
+        <label>   <input type="text" name="name"  placeholder="${PLH_name}"> </label><br>
+        <label> ${star} <input type="password" name="fPasswdA" placeholder="${PLH_passwdA}" /></label><br>
+        <label> ${star} <input type="password" name="fPasswdB" placeholder="${PLH_passwdB}"/></label><br>
+
+            <input type="hidden" name="modifyID" value="${editID}">
 
         <input type="submit" value="Wyślij">
     </form>
