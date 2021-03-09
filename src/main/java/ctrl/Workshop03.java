@@ -54,7 +54,7 @@ public class Workshop03 {
 
         User temp;
         int recordsPrinted=0, i=1;
-        System.out.println("Read all " + uDAO.getRecordsCount() + " records from DB");
+        System.out.println("Loading " + uDAO.getRecordsCount() + " records from '"+dbTable+"'");
         while(recordsPrinted < uDAO.getRecordsCount()){
             temp = uDAO.read(i++);
             if(temp != null) {
@@ -62,7 +62,6 @@ public class Workshop03 {
                 recordsPrinted++;
             }
         }
-
     }
 
     public static void initiallyPopulateDB(UserDao udao, Set<User> users ){

@@ -61,11 +61,10 @@ public class User {
 
     @Override
     public String toString() {
-        final String fmt = " Cannot obtain data this way";
-        return fmt;
+        return "Can't obtain data this way";
     }
     public String toStringForTesting() {
-        final String fmt = " [user]: %3d %-10s %-28s %s";
+        final String fmt = "[user]: %3d %-10s %-28s %s";
         return String.format(fmt, ID, login, name, email);
     }
 }
