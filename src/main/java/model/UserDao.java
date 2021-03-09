@@ -12,8 +12,8 @@ import static utils.MyDBTools.mySQLConnect;
 
 public class UserDao {
 
-    private String SQLdataBase;
-    private String SQLtable;
+    private final String SQLdataBase;
+    private final String SQLtable;
     private static final int size_login  = 16;
     private static final int size_name   = 255;
     private static final int size_email  = 32;
@@ -58,8 +58,8 @@ public class UserDao {
     public Map<Integer,User> getUsersMap(){
         Map<Integer,User> UsersMap = new HashMap<>();
         long[] IDs = getRecordIDs();
-        for(int i=0; i<IDs.length; i++){
-            UsersMap.put((int) IDs[i], read(IDs[i]));
+        for (long id : IDs) {
+            UsersMap.put((int) id, read(id));
         }
         return UsersMap;
     }
@@ -106,8 +106,7 @@ public class UserDao {
                                 UPDATE_USER_QUERY.
                                         replaceAll("_SQL-TABLE-NAME_", SQLtable).
                                         replaceAll("_SQL-COLUMN-NAME_", collumn),
-                                PreparedStatement.RETURN_GENERATED_KEYS);
-            ) {
+                                PreparedStatement.RETURN_GENERATED_KEYS)  ) {
                 stmt.setString(1, newValue);
                 stmt.setLong(2,ID);
                 return stmt.executeUpdate();
@@ -188,7 +187,7 @@ public class UserDao {
     }
 
     public Boolean createTable(){
-        Boolean tabExists = false;
+        boolean tabExists = false;
        try(Connection c  = mySQLConnect(SQLdataBase)){
            // Pobierz meda dane z servera SQL
            DatabaseMetaData meta = c.getMetaData();
@@ -216,33 +215,6 @@ public class UserDao {
            return null;
        }
     }
-
-/*
-
-/*
-    public User[] readAll(){
-        int trialId=1;
-        User[] allUsers = new User[0];
-        User current;
-        for(int i=1; i<=getDBaseSize(); i++){
-            do{
-                current = this.read(trialId++);
-                if(current != null){
-                    allUsers = extendUsersArray(allUsers, current);
-                }
-            }while(current != null);
-        }
-        return allUsers;
-    }
-
-    private User[] extendUsersArray(User[] users, User newUser) {
-        User[] extendedUsers = Arrays.copyOf(users, users.length + 1); 
-        extendedUsers[users.length] = newUser; 
-        return extendedUsers;
-    }
-
-
-     */
 
     private int countMatching(String collumn, String searchValue){
         try(Connection c = mySQLConnect(SQLdataBase);
@@ -273,7 +245,8 @@ public class UserDao {
     }
 
     public boolean validateNewEmail(String candidateEmail){
-        final String EMAIL_REGEX = "[_a-zA-Z0-9-]+(\\.[_a-zA-Z0-9-]+)*@[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)*\\.([a-zA-Z]{2,}){1}";
+        final String EMAIL_REGEX =
+                "[_a-zA-Z0-9-]+(\\.[_a-zA-Z0-9-]+)*@[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)*\\.([a-zA-Z]{2,}){1}";
         if(candidateEmail!=null) {
             boolean emailLength = candidateEmail.length() < size_email;
             boolean emailUsed = countMatching("email", candidateEmail) == 0;
