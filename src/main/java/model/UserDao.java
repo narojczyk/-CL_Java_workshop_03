@@ -6,12 +6,14 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
+
+import static ctrl.Parameters.*;
+
 import static org.mindrot.jbcrypt.BCrypt.gensalt;
 import static org.mindrot.jbcrypt.BCrypt.hashpw;
 import static utils.MyDBTools.mySQLConnect;
 
 public class UserDao {
-
     private final String SQLdataBase;
     private final String SQLtable;
     private static final int size_login  = 16;
@@ -95,7 +97,7 @@ public class UserDao {
                 e.printStackTrace();
             }
         }
-        return 0;
+        return DAO_UPDATE_WRONG_INDEX_PASSED;
     }
 
     public int update(long ID, String collumn, String newValue){
@@ -113,12 +115,12 @@ public class UserDao {
             } catch (SQLIntegrityConstraintViolationException ecv){
                 System.out.printf("[UserDAO update] Failed - %s='%s' exists\n",
                         collumn, newValue);
-                return 0;
+                return DAO_UPDATE_FAILED;
             }catch (SQLException e) {
                 e.printStackTrace();
             }
         }
-        return 0;
+        return DAO_UPDATE_WRONG_INDEX_PASSED;
     }
 
     public User read(long userID){
@@ -160,12 +162,12 @@ public class UserDao {
                     return rs.getLong(1);
                 }
             }catch (SQLIntegrityConstraintViolationException e){
-                return -99;
+                return DAO_CREATE_FAILED_SQL_CONSTRAINT_VIOLATION;
             }catch (SQLException e) {
                 e.printStackTrace();
             }
         }
-        return -666;
+        return DAO_CREATE_FAILED;
     }
 
     private String hashPassword(String password) {
@@ -183,11 +185,11 @@ public class UserDao {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return 0;
+        return DAO_GETRECORDSCOUNT_FAILED;
     }
 
     public Boolean createTable(){
-        boolean tabExists = false;
+       boolean tabExists = false;
        try(Connection c  = mySQLConnect(SQLdataBase)){
            // Pobierz meda dane z servera SQL
            DatabaseMetaData meta = c.getMetaData();

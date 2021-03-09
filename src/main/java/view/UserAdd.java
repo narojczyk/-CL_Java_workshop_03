@@ -9,8 +9,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+
+import static ctrl.Parameters.*;
 
 @WebServlet("/user/add")
 public class UserAdd extends HttpServlet {
@@ -39,7 +39,7 @@ public class UserAdd extends HttpServlet {
             ID = uDAO.create(new User(FRM_login, FRM_name, FRM_email, FRM_passwd_A));
         }
 
-        if(ID == -666){
+        if(ID == DAO_CREATE_FAILED){
             System.out.println("[UserAdd] User NOT added - null passwd to create() ID="+ID);
         }else if (ID <= 0){
             System.out.printf("[UserAdd] User NOT added ID=%d tests: ",ID);
@@ -48,14 +48,6 @@ public class UserAdd extends HttpServlet {
             System.out.printf("passwdMatch %s;", passwdMathes);
             System.out.printf("passwdStrong %s;\n", strongPasswd);
 
-            // Reuse valid data
-//            r.setAttribute("LST_name", FRM_name);
-//            if(loginIsValid) {
-//                r.setAttribute("LST_login", FRM_login);
-//            }
-//            if(emailIsValid) {
-//                r.setAttribute("LST_email", FRM_email);
-//            }
             R.sendRedirect("/user/add");
         }else{
             System.out.printf("[UserAdd] User added to %s with ID=%d\n", dbName, ID);

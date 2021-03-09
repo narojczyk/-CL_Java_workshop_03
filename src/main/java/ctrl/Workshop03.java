@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import static ctrl.Parameters.*;
 import static utils.MyDBTools.checkIfExists;
 import static utils.MyDBTools.createDataBase;
 
@@ -17,13 +18,11 @@ public class Workshop03 {
         final String SQL_OP_TAC = "[main] SQL table '%s' in '%s' %s\n";
         final String CONF_CRT = "created";
         final String CONF_FOUND = "exists";
-        final String dbName = "workshop3", dbTable = "users";
+        final String dbName = SQL_DATABASE_NAME, dbTable = SQL_TABLE_NAME;
 
         UserDao uDAO = new UserDao(dbName, dbTable);
 
         Set<User> DefaultUsers = new HashSet<>();
-
-//        uDAO.printAllDBase();
 
         // Check if database exists on the server and create one otherwise
         Boolean dbExists = checkIfExists(dbName);
@@ -64,32 +63,24 @@ public class Workshop03 {
             }
         }
 
-//        uDAO.getRecordIDs();
-
-//        String testemail="qE12er34$#_-09";
-//        System.out.println(testemail +" "+
-//            uDAO.testPasswdStrength(testemail)
-//        );
-
-//        uDAO.update(121, "login", "login222");
-//        uDAO.update(121, "email", "jdoe3@gdzies.tam.pl");
     }
 
     public static void initiallyPopulateDB(UserDao udao, Set<User> users ){
         long id, added=0;
+        final String MSG_FORMAT = "[initiallyPopulateDB] User%sadded %s\n";
         for(User usr : users){
             id = udao.create(usr);
-            if(id == -99){
-                System.out.println("User NOT added - duplicate found");
-            }else if (id <= 0){
-                System.out.println("User NOT added - no idea why :)");
+            if(id == DAO_CREATE_FAILED_SQL_CONSTRAINT_VIOLATION){
+                System.out.printf(MSG_FORMAT," not ", "- duplicate found");
+            }else if (id == DAO_CREATE_FAILED){
+                System.out.printf(MSG_FORMAT," not ", "- unknown reason");
             }else{
-                System.out.println("User added to data base with ID="+id);
+                System.out.printf(MSG_FORMAT," ","to '"+ SQL_TABLE_NAME +"' with ID="+id);
                 added++;
             }
         }
-        System.out.println("Total of " + added + " users added to db");
-      }
+        System.out.println("[initiallyPopulateDB] " + added + " records added '"+SQL_TABLE_NAME+"'");
+    }
 
     public static Set<User> createDefUserSet(Set<User> users){
         users.add(new User("login1", "John W. Doe, the first",
