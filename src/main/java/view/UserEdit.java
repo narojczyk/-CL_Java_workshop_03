@@ -28,12 +28,6 @@ public class UserEdit extends HttpServlet {
         String FRM_passwd_A = r.getParameter("fPasswdA");
         String FRM_passwd_B = r.getParameter("fPasswdB");
 
-        // Rejestracja drivera JDBC przed połączeniem do bazy
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
         User userFromSQL = null;
         UserDao uDAO = new UserDao(dbName, dbTable);
 
@@ -59,13 +53,6 @@ public class UserEdit extends HttpServlet {
         final String dbName = "workshop3", dbTable = "users";
         String getUserID = r.getParameter("uid");
         Integer editID = Integer.parseInt(getUserID);
-
-        // Rejestracja drivera JDBC przed połączeniem do bazy
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
 
         User userFromSQL = null;
         UserDao uDAO = new UserDao(dbName, dbTable);

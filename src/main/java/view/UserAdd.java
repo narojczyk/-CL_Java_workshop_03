@@ -27,13 +27,6 @@ public class UserAdd extends HttpServlet {
         String FRM_passwd_B = r.getParameter("fPasswdB");
         final String dbName = "workshop3", dbTable = "users";
 
-        // Rejestracja drivera JDBC przed połączeniem do bazy
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-
         UserDao uDAO = new UserDao(dbName, dbTable);
 
         boolean loginIsValid = uDAO.validateNewLogin(FRM_login);

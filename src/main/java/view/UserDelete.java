@@ -22,13 +22,6 @@ public class UserDelete extends HttpServlet {
         R.getWriter().printf("uid %s received in post mode for delete \n",getUserID);
 
         if(deleteID > 0){
-            // Rejestracja drivera JDBC przed połączeniem do bazy
-            try {
-                Class.forName("com.mysql.cj.jdbc.Driver");
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            }
-
             UserDao uDAO = new UserDao(dbName, dbTable);
             uDAO.delete(deleteID);
         }
@@ -44,13 +37,6 @@ public class UserDelete extends HttpServlet {
         Integer deleteID = Integer.parseInt(getUserID);
 
         if(deleteID!=null && deleteID > 0){
-            // Rejestracja drivera JDBC przed połączeniem do bazy
-            try {
-                Class.forName("com.mysql.cj.jdbc.Driver");
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            }
-
             UserDao uDAO = new UserDao(dbName, dbTable);
             User userFromSQL = uDAO.read(deleteID);
             if(userFromSQL!=null) {

@@ -45,6 +45,14 @@ public class UserDao {
     public UserDao(String SQLdataBase, String SQLtable){
         this.SQLdataBase = SQLdataBase;
         this.SQLtable = SQLtable;
+
+        // Rejestracja drivera JDBC przed połączeniem do bazy
+        // Konieczne dla połączenia z poziomu servletu
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     public Map<Integer,User> getUsersMap(){

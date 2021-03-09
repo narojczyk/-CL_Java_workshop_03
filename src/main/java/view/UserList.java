@@ -27,13 +27,6 @@ public class UserList extends HttpServlet {
 
         final String dbName = "workshop3", dbTable = "users";
 
-        // Rejestracja drivera JDBC przed połączeniem do bazy
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-
         UserDao uDAO = new UserDao(dbName, dbTable);
         Map<Integer,User> UsersMap =  uDAO.getUsersMap();
 

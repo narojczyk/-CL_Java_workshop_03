@@ -28,12 +28,6 @@ public class ShowUserInfo extends HttpServlet {
         String getUserID = r.getParameter("uid");
         Integer showID = Integer.parseInt(getUserID);
 
-        // Rejestracja drivera JDBC przed połączeniem do bazy
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
         User userFromSQL = null;
         UserDao uDAO = new UserDao(dbName, dbTable);
 
