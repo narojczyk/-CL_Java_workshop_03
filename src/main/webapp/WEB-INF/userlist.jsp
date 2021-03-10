@@ -10,7 +10,7 @@
 <body>
 <div class="mainbody">
     <%@ include file="header.jsp" %>
-    <div>
+    <div class="menufs">
         <table>
           <thead>
             <tr><th style="width: 10%;">ID</th>
@@ -20,11 +20,11 @@
           </thead><tbody>
           <c:forEach items="${UsersMap}" var="UsersMap">
             <tr>
-                <option value="${UsersMap.key}">
+<%--                <option value="${UsersMap.key}"></option>--%>
                     <td>${UsersMap.value.getID()}   </td>
                     <td>${UsersMap.value.getLogin()}</td>
                     <td>${UsersMap.value.getEmail()}</td>
-                </option>
+
                 <td>    <a href="${SRV_CON}/user/delete?uid=${UsersMap.value.getID()}">Delete</a>
                         <a href="${SRV_CON}/user/edit?uid=${UsersMap.value.getID()}">Edit</a>
                         <a href="${SRV_CON}/user/show?uid=${UsersMap.value.getID()}">Show details</a></td>
