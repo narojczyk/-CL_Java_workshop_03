@@ -9,8 +9,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+
+import static ctrl.Parameters.*;
+
 
 @WebServlet("/user/show")
 public class ShowUserInfo extends HttpServlet {
@@ -21,29 +22,31 @@ public class ShowUserInfo extends HttpServlet {
 //    }
 
     protected void doGet(
-            HttpServletRequest r, HttpServletResponse R)
+            HttpServletRequest RX, HttpServletResponse TX)
             throws ServletException, IOException {
 
-        final String dbName = "workshop3", dbTable = "users";
-        String getUserID = r.getParameter("uid");
+        String getUserID = RX.getParameter("uid");
         Integer showID = Integer.parseInt(getUserID);
 
-        User userFromSQL = null;
-        UserDao uDAO = new UserDao(dbName, dbTable);
+        UserDao uDAO = new UserDao(SQL_DATABASE_NAME, SQL_TABLE_NAME);
 
         if(showID!=null) {
-            userFromSQL = uDAO.read(showID);
-        }
-        if(userFromSQL!=null) {
-            r.setAttribute("UserData", userFromSQL);
+            User userFromSQL = uDAO.read(showID);
+            if(userFromSQL!=null) {
+                RX.setAttribute("UserData", userFromSQL);
+            }
+        }else{
+            RX.setAttribute("UserData", "");
         }
 
-        r.setAttribute("action", "/user/edit");
-        r.setAttribute("method", "get");
-        r.setAttribute("actionDesc", "Modyfikuj użytkownika");
+        RX.setAttribute("ViewName", "User details");
+        RX.setAttribute("mkRed","");
+        RX.setAttribute("action", SERVLET_CONTEXT+"/user/edit");
+        RX.setAttribute("method", "get");
+        RX.setAttribute("actionDesc", "Modify user data");
 
         getServletContext().getRequestDispatcher("/WEB-INF/usershow.jsp")
-                .forward(r, R);
+                .forward(RX, TX);
 
     }
 }

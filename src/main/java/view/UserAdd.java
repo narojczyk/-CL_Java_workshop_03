@@ -15,19 +15,18 @@ import static ctrl.Parameters.*;
 @WebServlet("/user/add")
 public class UserAdd extends HttpServlet {
     protected void doPost(
-            HttpServletRequest r, HttpServletResponse R)
+            HttpServletRequest RX, HttpServletResponse TX)
             throws ServletException, IOException {
 
         // Parameters from gatherUserData form
-        String FRM_login = r.getParameter("login");
-        String FRM_email = r.getParameter("email");
-        String FRM_name = r.getParameter("name");
+        String FRM_login = RX.getParameter("login");
+        String FRM_email = RX.getParameter("email");
+        String FRM_name = RX.getParameter("name");
         if(FRM_name == null) FRM_name="";
-        String FRM_passwd_A = r.getParameter("fPasswdA");
-        String FRM_passwd_B = r.getParameter("fPasswdB");
-        final String dbName = "workshop3", dbTable = "users";
+        String FRM_passwd_A = RX.getParameter("fPasswdA");
+        String FRM_passwd_B = RX.getParameter("fPasswdB");
 
-        UserDao uDAO = new UserDao(dbName, dbTable);
+        UserDao uDAO = new UserDao(SQL_DATABASE_NAME, SQL_TABLE_NAME);
 
         boolean loginIsValid = uDAO.validateNewLogin(FRM_login);
         boolean emailIsValid = uDAO.validateNewEmail(FRM_email);
@@ -37,44 +36,57 @@ public class UserAdd extends HttpServlet {
         long ID = 0;
         if(true && loginIsValid && emailIsValid && passwdMathes && strongPasswd) {
             ID = uDAO.create(new User(FRM_login, FRM_name, FRM_email, FRM_passwd_A));
+            // To nie działa
+            RX.setAttribute("mrkRed_L", "");
+            RX.setAttribute("mrkRed_E", "");
+            RX.setAttribute("mrkRed_P", "");
+        }else{
+            // To nie działa
+            if(!loginIsValid) RX.setAttribute("mrkRed_L", "class=\"setRedBrd\"");
+            if(!emailIsValid) RX.setAttribute("mrkRed_E", "class=\"setRedBrd\"");
+            if(!passwdMathes || !strongPasswd)
+                RX.setAttribute("mrkRed_P", "class=\"setRedBrd\"");
         }
 
         if(ID == DAO_CREATE_FAILED){
-            System.out.println("[UserAdd] User NOT added - null passwd to create() ID="+ID);
+            System.out.println("[UserAdd] User NOT added - 'null' passed to create() ID="+ID);
         }else if (ID <= 0){
             System.out.printf("[UserAdd] User NOT added ID=%d tests: ",ID);
             System.out.printf("login %s;", loginIsValid);
             System.out.printf("email %s;", emailIsValid);
             System.out.printf("passwdMatch %s;", passwdMathes);
             System.out.printf("passwdStrong %s;\n", strongPasswd);
-
-            R.sendRedirect("/user/add");
+            TX.sendRedirect(SERVLET_CONTEXT+"/user/add");
         }else{
-            System.out.printf("[UserAdd] User added to %s with ID=%d\n", dbName, ID);
-//            r.setAttribute("LST_login", "");
-//            r.setAttribute("LST_email", "");
-//            r.setAttribute("LST_name", "");
-            R.sendRedirect("/user/list");
+            System.out.printf("[UserAdd] User added to %s with ID=%d\n", SQL_DATABASE_NAME, ID);
+            TX.sendRedirect(SERVLET_CONTEXT+"/user/list");
         }
     }
 
     protected void doGet(
-            HttpServletRequest r, HttpServletResponse R)
+            HttpServletRequest RX, HttpServletResponse TX)
             throws ServletException, IOException {
-//        String LST_login = r.getParameter("LST_login");
-//        String LST_email = r.getParameter("LST_email");
-//        String LST_name  = r.getParameter("LST_name");
-        r.setAttribute("PLH_login", "login");
-        r.setAttribute("PLH_email", "email");
-        r.setAttribute("PLH_name", "full name");
-        r.setAttribute("PLH_passwdA", "password");
-        r.setAttribute("PLH_passwdB", "re-type password");
-        r.setAttribute("editID", "0");
-        r.setAttribute("formInfo",
-                "<p>Add user Form</p><p>required fields are marked with(*)</p>");
-        r.setAttribute("action", "/user/add");
-        r.setAttribute("star", "*");
+        // Wyswietl formularz do zebrania danych o uzytkownika
+        RX.setAttribute("SRV_CON", SERVLET_CONTEXT);
+        RX.setAttribute("ViewName", "Registration form");
+        RX.setAttribute("action", SERVLET_CONTEXT+"/user/add");
+        RX.setAttribute("formInfo", "New user data");
+        RX.setAttribute("formInstructions", "Fields marked with (*) are required");
+
+        // To sie przyda jak zastosuje cookies
+//        RX.setAttribute("mrkRed_L", "class=\"setRedBrd\"");
+//        RX.setAttribute("mrkRed_E", "");
+//        RX.setAttribute("mrkRed_P", "");
+
+        RX.setAttribute("PLH_login", "login");
+        RX.setAttribute("PLH_email", "email");
+        RX.setAttribute("PLH_name", "full name");
+        RX.setAttribute("PLH_passwdA", "password");
+        RX.setAttribute("PLH_passwdB", "re-type password");
+        RX.setAttribute("editID", "0");
+
+        RX.setAttribute("star", "*");
         getServletContext().getRequestDispatcher("/WEB-INF/gatherUserData.jsp")
-                .forward(r, R);
+                .forward(RX, TX);
     }
 }

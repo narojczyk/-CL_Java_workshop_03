@@ -1,3 +1,3 @@
 <header>
-    <h1>Most important heading here (header.jsp)</h1>
+    <h1>${ViewName}</h1>
 </header>

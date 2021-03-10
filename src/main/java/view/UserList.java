@@ -9,8 +9,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
+
+import static ctrl.Parameters.*;
 
 
 @WebServlet("/user/list")
@@ -18,22 +19,22 @@ public class UserList extends HttpServlet {
  /*   protected void doPost(
             HttpServletRequest r, HttpServletResponse R)
             throws ServletException, IOException {
-
     }*/
 
     protected void doGet(
-            HttpServletRequest r, HttpServletResponse R)
+            HttpServletRequest RX, HttpServletResponse TX)
             throws ServletException, IOException {
 
-        final String dbName = "workshop3", dbTable = "users";
+        UserDao uDAO = new UserDao(SQL_DATABASE_NAME, SQL_TABLE_NAME);
 
-        UserDao uDAO = new UserDao(dbName, dbTable);
         Map<Integer,User> UsersMap =  uDAO.getUsersMap();
 
-        r.setAttribute("UsersMap", UsersMap);
+        RX.setAttribute("SRV_CON", SERVLET_CONTEXT);
+        RX.setAttribute("ViewName", "Registered users");
+        RX.setAttribute("UsersMap", UsersMap);
 
-        getServletContext().getRequestDispatcher("/WEB-INF/userlist.jsp")
-                .forward(r, R);
+        getServletContext().getRequestDispatcher(
+                "/WEB-INF/userlist.jsp").forward(RX, TX);
 
     }
 }

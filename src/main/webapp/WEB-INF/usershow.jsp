@@ -8,29 +8,34 @@
     }
 </style>
 <head>
+    <%@ include file="common_head.html" %>
     <title>Users data</title>
 </head>
 <body>
+<div class="mainbody">
+    <%@ include file="header.jsp" %>
 
-<%@ include file="header.jsp" %>
-
-<div>
+<div class="menufs">
     <table>
       <tbody>
-      <tr><th>ID      </th><td><option value="${UserData}">${UserData.getID()}</td></tr>
-      <tr><th>Login   </th><td><option value="${UserData}">${UserData.getLogin()}</td></tr>
-      <tr><th>Nazwisko</th><td><option value="${UserData}">${UserData.getName()}</td></tr>
-      <tr><th>Email   </th><td><option value="${UserData}">${UserData.getEmail()}</td></tr>
+      <tr><th style="text-align:right;">ID :</th>
+          <td><option value="${UserData}">${UserData.getID()}</td></tr>
+      <tr><th style="text-align:right;">Login :</th>
+          <td><option value="${UserData}">${UserData.getLogin()}</td></tr>
+      <tr><th style="text-align:right;">Nazwisko :</th>
+          <td><option value="${UserData}">${UserData.getName()}</td></tr>
+      <tr><th style="text-align:right;">Email :</th>
+          <td><option value="${UserData}">${UserData.getEmail()}</td></tr>
       </tbody>
     </table>
-</div>
 
     <form action="${action}" method="${method}">
         <input type="hidden" name="uid" value="${UserData.getID()}">
-        <input type="submit" value="${actionDesc}">
+        <input class="pushbutton${mkRed}"  type="submit" value="${actionDesc}">
     </form>
+</div>
 
 <%@ include file="footer.jsp" %>
-
+</div>
 </body>
 </html>

@@ -8,4 +8,5 @@ public class Parameters {
     public static final int DAO_GETRECORDSCOUNT_FAILED = 0;
     public static final String SQL_DATABASE_NAME = "workshop3";
     public static final String SQL_TABLE_NAME = "users";
+    public static final String SERVLET_CONTEXT = "/adminpanel";
 }

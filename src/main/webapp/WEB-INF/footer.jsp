@@ -1,4 +1,4 @@
 <footer>
-    <p>Contact information: <a href="mailto:someone@example.com">
-        someone@example.com</a>.</p>
+    <p>Contact to server administration:
+        <a style="color:white;" href="mailto:bigdady@microsoft.com">bigdady@microsoft.com</a></p>
 </footer>
