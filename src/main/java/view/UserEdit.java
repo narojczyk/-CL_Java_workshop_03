@@ -14,6 +14,10 @@ import static ctrl.Parameters.*;
 
 @WebServlet("/user/edit")
 public class UserEdit extends HttpServlet {
+    private String mrkRed_L = "";
+    private String mrkRed_E = "";
+    private String mrkRed_P = "";
+
     protected void doPost(
             HttpServletRequest RX, HttpServletResponse TX)
             throws ServletException, IOException {
@@ -27,24 +31,58 @@ public class UserEdit extends HttpServlet {
         String FRM_name = RX.getParameter("name");
         String FRM_passwd_A = RX.getParameter("fPasswdA");
         String FRM_passwd_B = RX.getParameter("fPasswdB");
+        int updStatLogin, updStatEmail, updStatName;
+        boolean loginIsValid = false, emailIsValid = false;
+
+        // Resetuj zaznaczenia błędów w formularzu
+        mrkRed_L = "";
+        mrkRed_E = "";
+        mrkRed_P = "";
 
         UserDao uDAO = new UserDao(SQL_DATABASE_NAME, SQL_TABLE_NAME);
 
-        if(FRM_login!=null && uDAO.validateNewLogin(FRM_login)) {
-            uDAO.update(editID, "login", FRM_login);
+        // Waliduj i zaktualizuj login uzytkownika. Zaznacz pole na czerwono w przypadku bledu
+        updStatLogin = 1;
+        if(FRM_login!=null && FRM_login.length()>0) {
+            loginIsValid = uDAO.validateNewLogin(FRM_login);
+            if(loginIsValid && uDAO.update(editID, "login", FRM_login) != DAO_UPDATE_FAILED){
+                mrkRed_L = "";
+            }else{
+                mrkRed_L = "class=\"setRedBrd\"";
+                updStatLogin = DAO_UPDATE_FAILED;
+            }
         }
-
-        if(FRM_email!=null && uDAO.validateNewEmail(FRM_email)) {
-            uDAO.update(editID, "email", FRM_email);
+        // Waliduj i zaktualizuj email uzytkownika. Zaznacz pole na czerwono w przypadku bledu
+        updStatEmail = 1;
+        if(FRM_email!=null && FRM_email.length()>0) {
+            emailIsValid = uDAO.validateNewEmail(FRM_email);
+            if(emailIsValid && uDAO.update(editID, "email", FRM_email) != DAO_UPDATE_FAILED){
+                mrkRed_E = "";
+            }else{
+                mrkRed_E = "class=\"setRedBrd\"";
+                updStatEmail = DAO_UPDATE_FAILED;
+            }
         }
-
-        if(FRM_name!=null) {
-            uDAO.update(editID, "name", FRM_name);
+        // Waliduj (niepusty string) i zaktualizuj name uzytkownika (przytnij string jeśli za długi).
+        updStatName = 1;
+        if(FRM_name!=null && FRM_name.length()>0) {
+            if(FRM_name.length() > SQL_COL_NAME_LENGTH)
+                FRM_name = FRM_name.substring(0, SQL_COL_NAME_LENGTH - 1);
+            updStatName = uDAO.update(editID, "name", FRM_name);
         }
 
         // Update password here
 
-        TX.sendRedirect(SERVLET_CONTEXT+"/user/list");
+        // W przypadku błędów w updatach zaznacz pola na czerwono
+        if(updStatLogin + updStatEmail + updStatName != 3){
+            System.out.printf("[UserEdit] Update failed L%d E%d N%d\n",
+                    updStatLogin , updStatEmail , updStatName);
+            TX.sendRedirect(SERVLET_CONTEXT + "/user/edit?uid="+editUserID);
+        }else {
+            System.out.printf("[UserEdit] Update success L%d E%d N%d\n",
+                    updStatLogin , updStatEmail , updStatName);
+            TX.sendRedirect(SERVLET_CONTEXT + "/user/list");
+        }
     }
 
     protected void doGet(
@@ -66,9 +104,11 @@ public class UserEdit extends HttpServlet {
             RX.setAttribute("editID", editID);
         }
 
-        /*RX.setAttribute("LST_login", "");
-        RX.setAttribute("LST_email", "");
-        RX.setAttribute("LST_name", "");*/
+        // Zmienne do zaznaczania kolorem błędów w formularzu
+        RX.setAttribute("mrkRed_L", mrkRed_L);
+        RX.setAttribute("mrkRed_E", mrkRed_E);
+        RX.setAttribute("mrkRed_P", mrkRed_P);
+
         RX.setAttribute("SRV_CON", SERVLET_CONTEXT);
         RX.setAttribute("ViewName", "Modification form");
         RX.setAttribute("action", SERVLET_CONTEXT+"/user/edit");

@@ -275,4 +275,8 @@ public class UserDao {
         }
         return false;
     }
+
+    public static int getSize_name(){
+        return size_name;
+    }
 }
